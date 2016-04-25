@@ -1,15 +1,20 @@
 // Sample code for starting the meshes project
 
 import processing.opengl.*;
+import java.util.Random;
 
 float time = 0;  // keep track of passing of time (for automatic rotation)
 boolean rotate_flag = true;       // automatic rotation of model?
 
+boolean perFaceNormal = true;    //otherwise, per-vertex normal
+
 Polyhedron poly;
+Random random;
 
 // initialize stuff
 void setup() {
   poly = new Polyhedron();
+  random = new Random();
   size(400, 400, OPENGL);  // must use OPENGL here !!!
   noStroke();     // do not draw the edges of polygons
 }
@@ -54,11 +59,69 @@ void draw()
     PVector v2 = poly.getVertex(face.v2);
     PVector v3 = poly.getVertex(face.v3);
     
-    beginShape();
-    vertex(v1.x, v1.y, v1.z);
-    vertex(v2.x, v2.y, v2.z);
-    vertex(v3.x, v3.y, v3.z);
-    endShape(CLOSE);
+    fill(face.r, face.g, face.b);
+    
+    if(perFaceNormal)
+    {
+      PVector normal = poly.normalAtFace(face);
+      
+      beginShape();
+      
+      normal(normal.x, normal.y, normal.z);
+      vertex(v1.x, v1.y, v1.z);
+      vertex(v2.x, v2.y, v2.z);
+      vertex(v3.x, v3.y, v3.z);
+      
+      endShape(CLOSE);
+    }
+    else
+    {
+      /***** CALCULATE V1 NORMAL *****/
+      Face[] v1Faces = poly.getFacesAtVertex(v1);
+      PVector v1Normal = new PVector(0, 0, 0);
+      
+      for(Face v1Face: v1Faces)
+      {
+        v1Normal = PVector.add(v1Normal, poly.normalAtFace(v1Face));
+      }
+      
+      v1Normal.normalize();
+      
+      /***** CALCULATE V2 NORMAL *****/
+      Face[] v2Faces = poly.getFacesAtVertex(v2);
+      PVector v2Normal = new PVector(0, 0, 0);
+      
+      for(Face v2Face: v2Faces)
+      {
+        v2Normal = PVector.add(v2Normal, poly.normalAtFace(v2Face));
+      }
+      
+      v2Normal.normalize();
+      
+      /***** CALCULATE V3 NORMAL *****/
+      Face[] v3Faces = poly.getFacesAtVertex(v3);
+      PVector v3Normal = new PVector(0, 0, 0);
+      
+      for(Face v3Face: v3Faces)
+      {
+        v3Normal = PVector.add(v3Normal, poly.normalAtFace(v3Face));
+      }
+      
+      v3Normal.normalize();
+      
+      beginShape();
+      
+      normal(v1Normal.x, v1Normal.y, v1Normal.z);
+      vertex(v1.x, v1.y, v1.z);
+      
+      normal(v2Normal.x, v2Normal.y, v2Normal.z);
+      vertex(v2.x, v2.y, v2.z);
+      
+      normal(v2Normal.x, v2Normal.y, v2Normal.z);
+      vertex(v3.x, v3.y, v3.z);
+      
+      endShape(CLOSE);
+    }
   }
 
   popMatrix();
@@ -88,11 +151,21 @@ void keyPressed() {
   else if (key == ' ') {
     rotate_flag = !rotate_flag;          // rotate the model?
   }else if (key == 'n') {
-    //toggle per-vertex shading
+    perFaceNormal = !perFaceNormal;
   }else if (key == 'r') {
-    //randomly color faces
+    for(int i = 0; i < poly.numFaces(); i++)
+    {
+      poly.getFace(i).r = random.nextInt(256);
+      poly.getFace(i).g = random.nextInt(256);
+      poly.getFace(i).b = random.nextInt(256);
+    }
   }else if (key == 'w') {
-    //color faces white
+    for(int i = 0; i < poly.numFaces(); i++)
+    {
+      poly.getFace(i).r = 255;
+      poly.getFace(i).g = 255;
+      poly.getFace(i).b = 255;
+    }
   }else if (key == 'd') {
     //calculate mesh dual
   }else if (key == 'q' || key == 'Q') {
