@@ -15,4 +15,29 @@ public class Face
       
       r = g = b = 255;
     }
+
+    public boolean isOpposite(Face other)
+    {
+        if (this == other)
+            return false;
+
+        int sharedVertices = 0;
+
+        if (v1 == other.v1 || v1 == other.v2 || v1 == other.v3)
+        {
+            sharedVertices += 1;   
+        }
+
+        if (v2 == other.v1 || v2 == other.v2 || v2 == other.v3)
+        {
+            sharedVertices += 1;   
+        }
+        
+        if (v3 == other.v1 || v3 == other.v2 || v3 == other.v3)
+        {
+            sharedVertices += 1;   
+        }
+        
+        return sharedVertices == 2;
+    }
 }
