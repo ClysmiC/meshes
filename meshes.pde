@@ -7,6 +7,7 @@ float time = 0;  // keep track of passing of time (for automatic rotation)
 boolean rotate_flag = true;       // automatic rotation of model?
 
 boolean perFaceNormal = true;    //otherwise, per-vertex normal
+boolean randomColors = false;
 
 Polyhedron poly;
 Random random;
@@ -63,7 +64,7 @@ void draw()
     
         if(perFaceNormal)
         {
-            PVector normal = poly.normalAtFace(face, time);
+            PVector normal = poly.normalAtFace(face);
       
             beginShape();
       
@@ -82,7 +83,7 @@ void draw()
       
             for(Face v1Face: v1Faces)
             {
-                v1Normal = PVector.add(v1Normal, poly.normalAtFace(v1Face, time));
+                v1Normal = PVector.add(v1Normal, poly.normalAtFace(v1Face));
             }
       
             v1Normal.normalize();
@@ -93,7 +94,7 @@ void draw()
       
             for(Face v2Face: v2Faces)
             {
-                v2Normal = PVector.add(v2Normal, poly.normalAtFace(v2Face, time));
+                v2Normal = PVector.add(v2Normal, poly.normalAtFace(v2Face));
             }
       
             v2Normal.normalize();
@@ -104,7 +105,7 @@ void draw()
       
             for(Face v3Face: v3Faces)
             {
-                v3Normal = PVector.add(v3Normal, poly.normalAtFace(v3Face, time));
+                v3Normal = PVector.add(v3Normal, poly.normalAtFace(v3Face));
             }
       
             v3Normal.normalize();
@@ -170,6 +171,8 @@ void keyPressed()
             poly.getFace(i).g = random.nextInt(256);
             poly.getFace(i).b = random.nextInt(256);
         }
+        
+        randomColors = true;
     }
     else if (key == 'w')
     {
@@ -179,10 +182,12 @@ void keyPressed()
             poly.getFace(i).g = 255;
             poly.getFace(i).b = 255;
         }
+        
+        randomColors = false;
     }
     else if (key == 'd')
     {
-        poly = poly.dual(); //<>//
+        poly = poly.dual(randomColors); //<>//
     }
     else if (key == 'q' || key == 'Q')
     {
@@ -240,5 +245,5 @@ void read_mesh (String filename)
         faces[i] = new Face(index1, index2, index3);
     }
 
-    poly = new Polyhedron(vertices, faces);
+    poly = new Polyhedron(vertices, faces, randomColors);
 }

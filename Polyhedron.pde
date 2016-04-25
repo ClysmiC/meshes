@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Polyhedron
 {
@@ -12,10 +13,28 @@ public class Polyhedron
         faces = new Face[0];
     }
 
-    public Polyhedron(PVector[] vertices, Face[] faces)
+    public Polyhedron(PVector[] vertices, Face[] faces, boolean randomColors)
     {
         this.vertices = vertices;
         this.faces = faces;
+        
+        Random rand = new Random();
+        
+        for(Face face: faces)
+        {
+          if(randomColors)
+          {
+            face.r = rand.nextInt(256);
+            face.g = rand.nextInt(256);
+            face.b = rand.nextInt(256);
+          }
+          else
+          {
+            face.r = 255;
+            face.g = 255;
+            face.b = 255;
+          }
+        }
     }
 
     public int numVertices()
@@ -62,7 +81,7 @@ public class Polyhedron
     // whether a vector is facing toward or away from the camera. If the
     // normal is facing AWAY at the given point in time, just multiply
     // it by negative 1.
-    public PVector normalAtFace(Face face, float time)
+    public PVector normalAtFace(Face face)
     {
         PVector v1 = vertices[face.v1];
         PVector v2 = vertices[face.v2];
@@ -72,21 +91,12 @@ public class Polyhedron
         PVector v12 = PVector.sub(v2, v1);
       
         PVector normal = v13.cross(v12);
-        normal.normalize();
-      
-        // rotate normal vector around X axis by the amount that we know the
-        // main scene will be rotated at
-        float normalZPostRotate = (float)(Math.sin(time) * normal.y + Math.cos(time) * normal.z);
-        
-        if(normalZPostRotate < 0)
-        {
-            normal.mult(-1);
-        }
+        normal = normal.normalize();
         
         return normal;
     }
 
-    public Polyhedron dual()
+    public Polyhedron dual(boolean randomColorsForNewPoly)
     {
         List<PVector> newVertices = new ArrayList();
         List<Face> newFaces = new ArrayList();
@@ -153,8 +163,14 @@ public class Polyhedron
                             newVertices.add(centroids.get(j));
                         }
 
-                        int v3 = newVertices.size();
-                        newVertices.add(centroidOfCentroids);
+                        int v3= newVertices.indexOf(centroidOfCentroids);
+
+                        // vertex isn't in list yet
+                        if(v3 == -1)
+                        {
+                            v3 = newVertices.size();
+                            newVertices.add(centroidOfCentroids);
+                        }
                         
                         newFaces.add(new Face(v1, v2, v3));
                     }
@@ -165,6 +181,6 @@ public class Polyhedron
         PVector[] v = newVertices.toArray(new PVector[0]);
         Face[] f = newFaces.toArray(new Face[0]);
 
-        return new Polyhedron(v, f);
+        return new Polyhedron(v, f, randomColorsForNewPoly);
     }
 }
